@@ -1,0 +1,12 @@
+=== CLASS-WISE TIMETABLE ===
+Period,10A,10B,
+Period 1,"Mon: Math (Mr. X)","Mon: Math (Mr. X)",
+Period 2,"Mon: Math (Mr. X)","Mon: Math (Mr. X)",
+Period 3,"Mon: Math (Mr. X)","Mon: Math (Mr. X)",
+
+
+=== TEACHER-WISE TIMETABLE ===
+Period,Mr. X,
+Period 1,"Mon: Math (10A+10B)",
+Period 2,"Mon: Math (10A+10B)",
+Period 3,"Mon: Math (10A+10B)",

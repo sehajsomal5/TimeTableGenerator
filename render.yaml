@@ -1,0 +1,9 @@
+services:
+  - type: web
+    name: timetable-pro
+    env: docker
+    plan: free
+    region: oregon
+    envVars:
+      - key: PORT
+        value: 10000

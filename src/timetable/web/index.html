@@ -1,0 +1,1033 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Timetable Pro - Cloud Edition</title>
+    <!-- Modern Typography & Icons -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- PDF Generation Libraries -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
+    <style>
+        :root {
+            --primary: #6366f1;
+            --primary-dark: #4f46e5;
+            --secondary: #10b981;
+            --accent: #f59e0b;
+            --danger: #ef4444;
+            --bg: #f8fafc;
+            --card-bg: #ffffff;
+            --text-main: #1e293b;
+            --text-muted: #64748b;
+            --border: #e2e8f0;
+            --radius: 12px;
+            --shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+        }
+
+        * {
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            margin: 0;
+            padding: 0;
+            background: var(--bg);
+            color: var(--text-main);
+            line-height: 1.5;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        .header {
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            color: white;
+            padding: 24px 16px;
+            text-align: center;
+            box-shadow: var(--shadow);
+        }
+
+        .header h1 {
+            margin: 0;
+            font-size: 1.5rem;
+            font-weight: 700;
+            letter-spacing: -0.025em;
+        }
+
+        .header p {
+            margin: 4px 0 0;
+            font-size: 0.875rem;
+            opacity: 0.9;
+        }
+
+        .nav {
+            display: flex;
+            background: var(--card-bg);
+            padding: 4px;
+            margin: 12px;
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            position: sticky;
+            top: 12px;
+            z-index: 100;
+        }
+
+        .nav div {
+            flex: 1;
+            text-align: center;
+            padding: 10px 4px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: var(--text-muted);
+            cursor: pointer;
+            border-radius: calc(var(--radius) - 4px);
+            transition: all 0.2s ease;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 2px;
+        }
+
+        .nav div.active {
+            background: var(--primary);
+            color: white;
+            box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+        }
+
+        .container {
+            padding: 8px 16px 100px;
+            max-width: 640px;
+            margin: auto;
+        }
+
+        .card {
+            background: var(--card-bg);
+            padding: 20px;
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            margin-bottom: 20px;
+            border: 1px solid var(--border);
+            transition: transform 0.2s ease;
+        }
+
+        .card:active {
+            transform: scale(0.98);
+        }
+
+        h2 {
+            margin: 0 0 16px;
+            font-size: 1.125rem;
+            font-weight: 600;
+            color: var(--text-main);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 6px;
+            font-size: 0.875rem;
+            font-weight: 500;
+            color: var(--text-muted);
+        }
+
+        input,
+        select {
+            width: 100%;
+            padding: 12px 16px;
+            background: #f1f5f9;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            font-size: 1rem;
+            color: var(--text-main);
+            transition: all 0.2s;
+            margin-bottom: 12px;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: var(--primary);
+            background: white;
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+        }
+
+        .checkbox-group {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 8px;
+            margin-bottom: 16px;
+        }
+
+        .checkbox-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: #f1f5f9;
+            padding: 8px 12px;
+            border-radius: 8px;
+            font-size: 0.875rem;
+            cursor: pointer;
+        }
+
+        .checkbox-item input {
+            margin: 0;
+            width: auto;
+        }
+
+        button {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 14px 24px;
+            border-radius: 12px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 600;
+            width: 100%;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            box-shadow: 0 4px 12px rgba(99, 102, 241, 0.2);
+        }
+
+        button:hover {
+            background: var(--primary-dark);
+        }
+
+        button:active {
+            transform: translateY(1px);
+        }
+
+        button.secondary {
+            background: white;
+            color: var(--primary);
+            border: 2px solid var(--primary);
+            box-shadow: none;
+        }
+
+        button.delete {
+            background: #fee2e2;
+            color: var(--danger);
+            width: 32px;
+            height: 32px;
+            padding: 0;
+            border-radius: 50%;
+            font-size: 18px;
+            box-shadow: none;
+        }
+
+        .list-item {
+            background: #f8fafc;
+            padding: 12px;
+            border: 1px solid var(--border);
+            margin-top: 12px;
+            border-radius: 10px;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        #resultPre {
+            white-space: pre-wrap;
+            font-family: 'Menlo', 'Monaco', 'Courier New', monospace;
+            font-size: 0.75rem;
+            background: #0f172a;
+            color: #e2e8f0;
+            padding: 16px;
+            border-radius: 8px;
+            overflow-x: auto;
+            line-height: 1.4;
+            border: 1px solid #334155;
+        }
+
+        .fab {
+            position: fixed;
+            bottom: 24px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: calc(100% - 32px);
+            max-width: 608px;
+            z-index: 1000;
+        }
+
+        /* Result Specific Styles */
+        .result-tabs {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 16px;
+            overflow-x: auto;
+            padding-bottom: 4px;
+        }
+
+        .result-tabs button {
+            padding: 8px 16px;
+            font-size: 0.8rem;
+            width: auto;
+            background: #e2e8f0;
+            color: var(--text-main);
+            box-shadow: none;
+        }
+
+        .result-tabs button.active {
+            background: var(--primary);
+            color: white;
+        }
+
+        .table-container {
+            width: 100%;
+            overflow-x: auto;
+            margin-bottom: 24px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.8rem;
+            background: white;
+            border-radius: 8px;
+            overflow: hidden;
+            border: 1px solid var(--border);
+        }
+
+        th,
+        td {
+            padding: 12px;
+            border: 1px solid var(--border);
+            text-align: center;
+        }
+
+        th {
+            background: #f1f5f9;
+            font-weight: 600;
+            color: var(--text-muted);
+        }
+
+        .subject-cell {
+            background: #f8fafc;
+            border-radius: 4px;
+            padding: 4px;
+            font-weight: 500;
+        }
+
+        .teacher-name {
+            font-size: 0.7rem;
+            color: var(--text-muted);
+            display: block;
+        }
+
+        .export-actions {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-top: 20px;
+        }
+
+        .export-btn {
+            padding: 12px;
+            font-size: 0.9rem;
+        }
+
+        /* Premium Loader */
+        #loader-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(15, 23, 42, 0.85);
+            backdrop-filter: blur(8px);
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+            color: white;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .spinner {
+            width: 64px;
+            height: 64px;
+            border: 5px solid rgba(255, 255, 255, 0.1);
+            border-top: 5px solid var(--primary);
+            border-radius: 50%;
+            animation: spin 1s cubic-bezier(0.5, 0, 0.5, 1) infinite;
+            margin-bottom: 20px;
+            box-shadow: 0 0 30px rgba(99, 102, 241, 0.4);
+        }
+
+        .loader-text {
+            font-size: 1.25rem;
+            font-weight: 600;
+            letter-spacing: 0.05em;
+            text-align: center;
+            animation: pulse 1.5s ease-in-out infinite;
+        }
+
+        .loader-hint {
+            font-size: 0.875rem;
+            opacity: 0.7;
+            margin-top: 8px;
+        }
+
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+
+        @keyframes pulse {
+
+            0%,
+            100% {
+                opacity: 1;
+                transform: scale(1);
+            }
+
+            50% {
+                opacity: 0.7;
+                transform: scale(0.98);
+            }
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+
+            to {
+                opacity: 1;
+            }
+        }
+
+        /* Startup Loader */
+        #startup-loader {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #0f172a;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 10000;
+            color: white;
+            transition: opacity 0.8s cubic-bezier(0.4, 0, 0.2, 1), visibility 0.8s;
+        }
+
+        .loader-logo {
+            font-size: 2.5rem;
+            font-weight: 800;
+            margin-bottom: 24px;
+            letter-spacing: -0.05em;
+            animation: slideUp 1s ease-out;
+        }
+
+        .loader-logo span {
+            color: var(--primary);
+            text-shadow: 0 0 20px rgba(99, 102, 241, 0.5);
+        }
+
+        .progress-bar {
+            width: 200px;
+            height: 4px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 2px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .progress-fill {
+            position: absolute;
+            top: 0;
+            left: 0;
+            height: 100%;
+            width: 30%;
+            background: var(--primary);
+            box-shadow: 0 0 15px var(--primary);
+            animation: progressAnim 2s ease-in-out infinite;
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes progressAnim {
+            0% {
+                left: -40%;
+                width: 40%;
+            }
+
+            50% {
+                left: 40%;
+                width: 30%;
+            }
+
+            100% {
+                left: 100%;
+                width: 40%;
+            }
+        }
+
+        .startup-finished {
+            opacity: 0;
+            visibility: hidden;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="header">
+        <h1>Timetable Pro</h1>
+        <p>Cloud Generation Engine</p>
+    </div>
+
+    <div id="loader-overlay">
+        <div class="spinner"></div>
+        <div class="loader-text">OPTIMIZING TIMETABLE</div>
+        <div class="loader-hint">Solving complex constraints...</div>
+    </div>
+
+    <div id="startup-loader">
+        <div class="loader-logo">Timetable<span>Pro</span></div>
+        <p
+            style="margin-bottom: 24px; font-size: 1.5rem; font-weight: 500; color: #f8fafc; animation: fadeIn 1.5s ease-in;">
+            Welcome Papa</p>
+        <div class="progress-bar">
+            <div class="progress-fill"></div>
+        </div>
+        <p
+            style="margin-top: 20px; font-size: 0.75rem; color: #64748b; text-transform: uppercase; letter-spacing: 0.2em;">
+            Initializing Engine</p>
+    </div>
+
+    <div class="nav">
+        <div id="nav-setup" class="active" onclick="showTab('setup')">
+            <span>⚙️</span><span>Setup</span>
+        </div>
+        <div id="nav-class" onclick="showTab('class')">
+            <span>🏫</span><span>Classes</span>
+        </div>
+        <div id="nav-teacher" onclick="showTab('teacher')">
+            <span>👨‍🏫</span><span>Teachers</span>
+        </div>
+        <div id="nav-result" onclick="showTab('result')">
+            <span>📅</span><span>Output</span>
+        </div>
+    </div>
+
+    <div class="container">
+
+        <!-- STEP 1: CONFIG -->
+        <div id="tab-setup">
+            <div class="card">
+                <h2>Workflow Setup</h2>
+                <label>Daily Sessions / Periods</label>
+                <input type="number" id="periods" value="8" min="1" max="15">
+
+                <label>Active Workdays</label>
+                <div class="checkbox-group">
+                    <label class="checkbox-item"><input type="checkbox" id="d-mon" checked> Mon</label>
+                    <label class="checkbox-item"><input type="checkbox" id="d-tue" checked> Tue</label>
+                    <label class="checkbox-item"><input type="checkbox" id="d-wed" checked> Wed</label>
+                    <label class="checkbox-item"><input type="checkbox" id="d-thu" checked> Thu</label>
+                    <label class="checkbox-item"><input type="checkbox" id="d-fri" checked> Fri</label>
+                    <label class="checkbox-item"><input type="checkbox" id="d-sat"> Sat</label>
+                </div>
+
+                <button onclick="showTab('class')">Continue to Classes →</button>
+            </div>
+        </div>
+
+        <!-- STEP 2: CLASSES -->
+        <div id="tab-class" class="hidden">
+            <div class="card">
+                <h2>Add New Class</h2>
+                <input type="text" id="className" placeholder="Class Identity (e.g., 10-A)">
+                <button class="secondary" onclick="addClass()">+ Register Class</button>
+            </div>
+
+            <div id="classList"></div>
+
+            <div class="fab">
+                <button onclick="showTab('teacher')">Manage Teachers →</button>
+            </div>
+        </div>
+
+        <!-- STEP 3: TEACHERS -->
+        <div id="tab-teacher" class="hidden">
+            <div class="card">
+                <h2>Register Teacher</h2>
+                <input type="text" id="teacherName" placeholder="Full Name">
+                <button class="secondary" onclick="addTeacher()">+ Add Teacher Profile</button>
+            </div>
+
+            <div id="teacherList"></div>
+
+            <div class="fab">
+                <button style="background: var(--secondary);" onclick="generate()">🚀 GENERATE ENGINE</button>
+            </div>
+        </div>
+
+        <!-- STEP 4: RESULT -->
+        <div id="tab-result" class="hidden">
+            <div class="card" style="max-width: none; width: 100%;">
+                <h2>Timetable Portfolio</h2>
+
+                <div class="result-tabs">
+                    <button id="rt-class" class="active" onclick="showResultView('class')">Class-wise</button>
+                    <button id="rt-teacher" onclick="showResultView('teacher')">Teacher-wise</button>
+                    <button id="rt-master-class" onclick="showResultView('master-class')">Master (Class)</button>
+                    <button id="rt-master-teacher" onclick="showResultView('master-teacher')">Master (Teacher)</button>
+                </div>
+
+                <div id="output-container">
+                    <div id="view-class"></div>
+                    <div id="view-teacher" class="hidden"></div>
+                    <div id="view-master-class" class="hidden"></div>
+                    <div id="view-master-teacher" class="hidden"></div>
+                    <div id="view-error" class="hidden">
+                        <div style="text-align:center; padding: 40px 20px;">
+                            <span style="font-size: 3rem;">⚠️</span>
+                            <p id="error-msg" style="color: var(--danger); font-weight: 600; margin-top: 16px;"></p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="export-actions">
+                    <button class="export-btn" style="background: var(--secondary);" onclick="downloadPDF()">📄 Download
+                        PDF</button>
+                    <button class="export-btn" style="background: var(--accent);" onclick="downloadCSV()">📊 Export
+                        CSV</button>
+                </div>
+
+                <button style="margin-top: 24px; background: var(--primary-dark);" onclick="generate()">⚡ Re-Run
+                    Engine</button>
+            </div>
+        </div>
+
+    </div>
+
+    <footer
+        style="text-align: center; padding: 24px; color: var(--text-muted); font-size: 0.875rem; border-top: 1px solid var(--border); margin-top: 40px;">
+        <p>&copy; 2026 Timetable Pro. All rights reserved.</p>
+        <p style="font-weight: 600; color: var(--text-main); margin-top: 4px;">Copyright Daljit Singh</p>
+    </footer>
+
+    <script>
+        let appData = {
+            classes: [],
+            teachers: []
+        };
+        let lastResult = null;
+
+        function showTab(id) {
+            document.querySelectorAll('.container > div').forEach(d => d.classList.add('hidden'));
+            document.getElementById('tab-' + id).classList.remove('hidden');
+
+            document.querySelectorAll('.nav div').forEach(d => d.classList.remove('active'));
+            document.getElementById('nav-' + id).classList.add('active');
+            window.scrollTo(0, 0);
+        }
+
+        function showResultView(view) {
+            document.querySelectorAll('#output-container > div').forEach(d => d.classList.add('hidden'));
+            document.getElementById('view-' + view).classList.remove('hidden');
+
+            document.querySelectorAll('.result-tabs button').forEach(b => b.classList.remove('active'));
+            document.getElementById('rt-' + view).classList.add('active');
+        }
+
+        function addClass() {
+            let name = document.getElementById('className').value.trim();
+            if (!name) return;
+
+            let cls = { name: name, subjects: [], fixed: [] };
+            appData.classes.push(cls);
+            document.getElementById('className').value = '';
+            renderClasses();
+        }
+
+        function addSubject(clsIdx) {
+            let sub = prompt("Subject Name (e.g. Physics):");
+            if (!sub) return;
+            let lec = prompt("Lessons per week:", "4");
+            let combo = prompt("Combined with (optional class name):", "");
+
+            appData.classes[clsIdx].subjects.push({ name: sub, lec: parseInt(lec) || 4, combo: combo });
+            renderClasses();
+        }
+
+        function addFixedSlot(clsIdx) {
+            let day = prompt("Day (Monday, Tuesday, Wednesday, Thursday, Friday, Saturday):");
+            if (!day) return;
+            let period = prompt("Period Number (1-8):", "1");
+            if (!period) return;
+            let sub = prompt("Subject Name:");
+            if (!sub) return;
+            let teacher = prompt("Teacher Name:");
+            if (!teacher) return;
+
+            appData.classes[clsIdx].fixed.push({
+                day: day,
+                period: parseInt(period),
+                subject: sub,
+                teacher: teacher
+            });
+            renderClasses();
+        }
+
+        function renderClasses() {
+            let html = '';
+            appData.classes.forEach((c, idx) => {
+                let subs = c.subjects.map(s => `<li>${s.name} <span style="color:var(--primary)">(${s.lec} lec)</span></li>`).join('');
+                let fixed = (c.fixed || []).map((f, fIdx) => `
+                    <div style="font-size:0.8rem; background:#fff; border:1px solid #eee; padding:4px 8px; border-radius:4px; margin-top:4px; display:flex; justify-content:space-between; align-items:center;">
+                        <span>📌 ${f.day} P${f.period}: ${f.subject} (${f.teacher})</span>
+                        <button style="width:20px; height:20px; padding:0; background:none; color:var(--danger); box-shadow:none;" onclick="appData.classes[${idx}].fixed.splice(${fIdx},1); renderClasses();">×</button>
+                    </div>
+                `).join('');
+
+                html += `
+                <div class="card">
+                    <button class="delete" style="float:right" onclick="appData.classes.splice(${idx},1); renderClasses();">×</button>
+                    <b style="font-size:1.2rem">${c.name}</b>
+                    
+                    <div style="margin-top:12px;">
+                        <label style="font-size:0.75rem; color:var(--primary); text-transform:uppercase; letter-spacing:0.05em;">Subjects</label>
+                        <ul style="margin:4px 0 12px; padding-left:20px; font-size:0.9rem; color:var(--text-muted);">${subs || 'No subjects added yet.'}</ul>
+                        <button class="secondary" style="font-size:0.75rem; padding:6px 10px; width:auto; margin-bottom:12px;" onclick="addSubject(${idx})">+ Add Subject</button>
+                    </div>
+
+                    <div style="margin-top:8px; padding-top:12px; border-top:1px dashed var(--border);">
+                        <label style="font-size:0.75rem; color:var(--secondary); text-transform:uppercase; letter-spacing:0.05em;">Fixed Slots (Eduset)</label>
+                        <div style="margin-bottom:8px;">${fixed || '<span style="font-size:0.85rem; color:#999;">No fixed slots.</span>'}</div>
+                        <button class="secondary" style="font-size:0.75rem; padding:6px 10px; width:auto; border-color:var(--secondary); color:var(--secondary);" onclick="addFixedSlot(${idx})">+ Add Fixed Slot</button>
+                    </div>
+                </div>`;
+            });
+            document.getElementById('classList').innerHTML = html;
+        }
+
+        function addTeacher() {
+            let name = document.getElementById('teacherName').value.trim();
+            if (!name) return;
+
+            appData.teachers.push({ name: name, teaches: [], na: [] });
+            document.getElementById('teacherName').value = '';
+            renderTeachers();
+        }
+
+        function assignSubject(tIdx) {
+            let cls = prompt("Target Class:");
+            let sub = prompt("Assigned Subject:");
+            if (cls && sub) {
+                appData.teachers[tIdx].teaches.push({ cls: cls, sub: sub });
+                renderTeachers();
+            }
+        }
+
+        function addUnavailability(tIdx) {
+            let day = prompt("Day (Monday, Tuesday, ...):");
+            let pers = prompt("Busy Periods (e.g. 1,2):");
+            if (day && pers) {
+                let pList = pers.split(',').map(p => parseInt(p.trim()));
+                appData.teachers[tIdx].na.push({ day: day, pers: pList });
+                renderTeachers();
+            }
+        }
+
+        function renderTeachers() {
+            let html = '';
+            appData.teachers.forEach((t, idx) => {
+                let teaches = t.teaches.map(x => `<div>📍 ${x.cls}: ${x.sub}</div>`).join('');
+                let na = t.na.map(x => `<div>⚠️ ${x.day}: ${x.pers.join(',')}</div>`).join('');
+
+                html += `
+                <div class="card">
+                    <button class="delete" style="float:right" onclick="appData.teachers.splice(${idx},1); renderTeachers();">×</button>
+                    <b style="font-size:1.2rem">${t.name}</b>
+                    <div style="font-size:0.85rem; margin:12px 0; color:var(--text-muted);">
+                        ${teaches || 'No assignments.'}
+                        ${na}
+                    </div>
+                    <div style="display:flex; gap:8px;">
+                        <button class="secondary" style="font-size:0.75rem; padding:8px; flex:1" onclick="assignSubject(${idx})">+ Assign</button>
+                        <button class="secondary" style="font-size:0.75rem; padding:8px; flex:1" onclick="addUnavailability(${idx})">+ Block Time</button>
+                    </div>
+                </div>`;
+            });
+            document.getElementById('teacherList').innerHTML = html;
+        }
+
+        async function generate() {
+            document.getElementById('loader-overlay').style.display = 'flex';
+
+            showTab('result');
+            document.getElementById('view-error').classList.add('hidden');
+            document.querySelectorAll('#output-container > div:not(#view-error)').forEach(d => d.innerHTML = '');
+
+            let lines = [];
+            let daysArr = [];
+            if (document.getElementById('d-mon').checked) daysArr.push("Monday");
+            if (document.getElementById('d-tue').checked) daysArr.push("Tuesday");
+            if (document.getElementById('d-wed').checked) daysArr.push("Wednesday");
+            if (document.getElementById('d-thu').checked) daysArr.push("Thursday");
+            if (document.getElementById('d-fri').checked) daysArr.push("Friday");
+            if (document.getElementById('d-sat').checked) daysArr.push("Saturday");
+
+            lines.push(`CONFIG|${document.getElementById('periods').value}|${daysArr.join(',')}`);
+
+            appData.classes.forEach(c => {
+                let subParts = c.subjects.map(s => `${s.name}:${s.lec}:${s.combo || 'None'}`);
+                lines.push(`CLASS|${c.name}|${subParts.join('|')}`);
+
+                if (c.fixed) {
+                    c.fixed.forEach(f => {
+                        lines.push(`FIXED|${c.name}|${f.day}|${f.period}|${f.subject}|${f.teacher}`);
+                    });
+                }
+            });
+
+            appData.teachers.forEach(t => {
+                let teaches = t.teaches.map(x => `${x.cls}:${x.sub}`).join(';');
+                let na = t.na.map(x => `${x.day}:${x.pers.join(',')}`).join(';');
+                lines.push(`TEACHER|${t.name}|${teaches}|${na}`);
+            });
+
+            try {
+                let res = await fetch('/api/generate', {
+                    method: 'POST',
+                    body: lines.join('\n')
+                });
+
+                let text = await res.text();
+                let data;
+                try {
+                    data = JSON.parse(text);
+                } catch (e) {
+                    console.error("JSON Parse Error. Server returned:", text);
+                    showError("Invalid Response: The server returned plain text or invalid JSON. Please ensure you RESTARTED the server after the last update.");
+                    return;
+                }
+
+                lastResult = data;
+                document.getElementById('loader-overlay').style.display = 'none';
+
+                if (data.status === 'success') {
+                    renderResult(data);
+                } else {
+                    showError(data.message || "No valid timetable possible.");
+                }
+            } catch (e) {
+                document.getElementById('loader-overlay').style.display = 'none';
+                console.error("Fetch Error:", e);
+                showError("Connection Failed: Ensure the 'run_web.bat' server is currently running and you have RESTARTED it.");
+            }
+        }
+
+        function showError(msg) {
+            document.querySelectorAll('#output-container > div').forEach(d => d.classList.add('hidden'));
+            document.getElementById('view-error').classList.remove('hidden');
+            document.getElementById('error-msg').innerText = msg;
+        }
+
+        function renderResult(data) {
+            const { days, periods } = data.config;
+
+            // 1. Class-wise Tables
+            let classHtml = '';
+            for (let clsName in data.classSchedules) {
+                let table = `<h3>Class: ${clsName}</h3><div class="table-container"><table><tr><th>Day / Period</th>`;
+                for (let p = 1; p <= periods; p++) table += `<th>P${p}</th>`;
+                table += '</tr>';
+
+                days.forEach((day, dIdx) => {
+                    table += `<tr><td><b>${day}</b></td>`;
+                    for (let p = 1; p <= periods; p++) {
+                        let key = p + dIdx * 100;
+                        let entry = data.classSchedules[clsName][key];
+                        table += `<td>${entry ? `<div class="subject-cell">${entry.subject}</div><span class="teacher-name">${entry.teacher}</span>` : '-'}</td>`;
+                    }
+                    table += '</tr>';
+                });
+                table += '</table></div>';
+                classHtml += table;
+            }
+            document.getElementById('view-class').innerHTML = classHtml;
+
+            // 2. Teacher-wise Tables
+            let teacherHtml = '';
+            for (let tName in data.teacherSchedules) {
+                let table = `<h3>Teacher: ${tName}</h3><div class="table-container"><table><tr><th>Day / Period</th>`;
+                for (let p = 1; p <= periods; p++) table += `<th>P${p}</th>`;
+                table += '</tr>';
+
+                days.forEach((day, dIdx) => {
+                    table += `<tr><td><b>${day}</b></td>`;
+                    for (let p = 1; p <= periods; p++) {
+                        let key = p + dIdx * 100;
+                        let entry = data.teacherSchedules[tName][key];
+                        table += `<td>${entry ? `<div class="subject-cell">${entry.subject}</div><span class="teacher-name">${entry.class}</span>` : '-'}</td>`;
+                    }
+                    table += '</tr>';
+                });
+                table += '</table></div>';
+                teacherHtml += table;
+            }
+            document.getElementById('view-teacher').innerHTML = teacherHtml;
+
+            // 3. Master Class View (Period x Class)
+            let masterClassHtml = '<h3>Master Table: Period x Class</h3><div class="table-container"><table><tr><th>Period</th>';
+            let classList = Object.keys(data.classSchedules);
+            classList.forEach(c => masterClassHtml += `<th>${c}</th>`);
+            masterClassHtml += '</tr>';
+
+            for (let p = 1; p <= periods; p++) {
+                masterClassHtml += `<tr><td><b>Period ${p}</b></td>`;
+                classList.forEach(cls => {
+                    let cellData = [];
+                    days.forEach((day, dIdx) => {
+                        let key = p + dIdx * 100;
+                        let entry = data.classSchedules[cls][key];
+                        if (entry) cellData.push(`${day.substring(0, 3)}: ${entry.subject}`);
+                    });
+                    masterClassHtml += `<td>${cellData.join('<br>') || '-'}</td>`;
+                });
+                masterClassHtml += '</tr>';
+            }
+            masterClassHtml += '</table></div>';
+            document.getElementById('view-master-class').innerHTML = masterClassHtml;
+
+            // 4. Master Teacher View (Period x Teacher)
+            let masterTeacherHtml = '<h3>Master Table: Period x Teacher</h3><div class="table-container"><table><tr><th>Period</th>';
+            let teacherList = Object.keys(data.teacherSchedules);
+            teacherList.forEach(t => masterTeacherHtml += `<th>${t}</th>`);
+            masterTeacherHtml += '</tr>';
+
+            for (let p = 1; p <= periods; p++) {
+                masterTeacherHtml += `<tr><td><b>Period ${p}</b></td>`;
+                teacherList.forEach(t => {
+                    let cellData = [];
+                    days.forEach((day, dIdx) => {
+                        let key = p + dIdx * 100;
+                        let entry = data.teacherSchedules[t][key];
+                        if (entry) cellData.push(`${day.substring(0, 3)}: ${entry.class}`);
+                    });
+                    masterTeacherHtml += `<td>${cellData.join('<br>') || '-'}</td>`;
+                });
+                masterTeacherHtml += '</tr>';
+            }
+            masterTeacherHtml += '</table></div>';
+            document.getElementById('view-master-teacher').innerHTML = masterTeacherHtml;
+
+            showResultView('class');
+        }
+
+        function downloadPDF() {
+            if (!lastResult) return alert("Generate timetable first!");
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+
+            doc.setFontSize(18);
+            doc.text("School Timetable Portfolio", 14, 20);
+            doc.setFontSize(10);
+            doc.text(`Generated on: ${new Date().toLocaleString()}`, 14, 28);
+
+            let startY = 35;
+
+            // Simple loop to add class tables to PDF
+            for (let cls in lastResult.classSchedules) {
+                doc.setFontSize(14);
+                doc.text(`Class: ${cls}`, 14, startY);
+
+                let headers = [["Day", ...Array.from({ length: lastResult.config.periods }, (_, i) => `P${i + 1}`)]];
+                let body = lastResult.config.days.map((day, dIdx) => {
+                    let row = [day];
+                    for (let p = 1; p <= lastResult.config.periods; p++) {
+                        let entry = lastResult.classSchedules[cls][p + dIdx * 100];
+                        row.push(entry ? `${entry.subject}\n(${entry.teacher})` : "-");
+                    }
+                    return row;
+                });
+
+                doc.autoTable({
+                    startY: startY + 5,
+                    head: headers,
+                    body: body,
+                    theme: 'grid',
+                    styles: { fontSize: 8, cellPadding: 2 },
+                    headStyles: { fillStyle: '#6366f1' }
+                });
+
+                startY = doc.lastAutoTable.finalY + 15;
+                if (startY > 250) { doc.addPage(); startY = 20; }
+            }
+
+            doc.save("School_Timetable.pdf");
+        }
+
+        function downloadCSV() {
+            if (!lastResult) return alert("Generate timetable first!");
+            let csv = "CLASS-WISE TIMETABLE\n";
+            const { days, periods } = lastResult.config;
+
+            for (let cls in lastResult.classSchedules) {
+                csv += `\nClass,${cls}\nDay/Period,`;
+                for (let p = 1; p <= periods; p++) csv += `P${p},`;
+                csv += "\n";
+
+                days.forEach((day, dIdx) => {
+                    csv += `${day},`;
+                    for (let p = 1; p <= periods; p++) {
+                        let entry = lastResult.classSchedules[cls][p + dIdx * 100];
+                        csv += entry ? `"${entry.subject} (${entry.teacher})",` : "-,";
+                    }
+                    csv += "\n";
+                });
+            }
+
+            const blob = new Blob([csv], { type: 'text/csv' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.setAttribute('hidden', '');
+            a.setAttribute('href', url);
+            a.setAttribute('download', 'Timetable.csv');
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+        }
+
+        // Startup Sequence
+        window.addEventListener('load', () => {
+            setTimeout(() => {
+                const loader = document.getElementById('startup-loader');
+                loader.classList.add('startup-finished');
+            }, 4000); // 4 seconds so Papa can read the welcome message
+        });
+    </script>
+
+</body>
+
+</html>

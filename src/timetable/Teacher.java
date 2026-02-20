@@ -4,8 +4,8 @@ import java.util.*;
 
 public class Teacher {
     public String name;
-    public Map<String, Set<String>> teaches = new HashMap<>();
-    public Map<String, Set<Integer>> notAvailable = new HashMap<>();
+    public Map<String, Set<String>> teaches = new LinkedHashMap<>();
+    public Map<String, Set<Integer>> notAvailable = new LinkedHashMap<>();
 
     public Teacher(String name) {
         this.name = name;
@@ -22,13 +22,25 @@ public class Teacher {
     }
 
     public boolean canTeach(String className, String subject) {
-        return teaches.containsKey(className) && teaches.get(className).contains(subject);
+        String clsLower = className.trim().toLowerCase();
+        String subLower = subject.trim().toLowerCase();
+
+        for (String c : teaches.keySet()) {
+            if (c.trim().toLowerCase().equals(clsLower)) {
+                for (String s : teaches.get(c)) {
+                    if (s.trim().toLowerCase().equals(subLower)) {
+                        return true;
+                    }
+                }
+            }
+        }
+        return false;
     }
 
-    public boolean isAvailable(String day, int period, Map<String, Map<Integer, String>> teacherSchedule) {
-        if (notAvailable.containsKey(day) && notAvailable.get(day).contains(period)) return false;
+    public boolean isAvailable(String day, int period, int key, Map<String, Map<Integer, String>> teacherSchedule) {
+        if (notAvailable.containsKey(day) && notAvailable.get(day).contains(period))
+            return false;
         Map<Integer, String> schedule = teacherSchedule.get(name);
-        int key = period + (TimetableUtils.getDayIndex(day) * 100);
         return !schedule.containsKey(key);
     }
 }

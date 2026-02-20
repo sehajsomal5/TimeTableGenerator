@@ -1,9 +1,9 @@
 package timetable;
 
 public class TimetableEntry {
-    String className;
-    String subject;
-    String teacherName;
+    public String className;
+    public String subject;
+    public String teacherName;
 
     public TimetableEntry(String className, String subject, String teacherName) {
         this.className = className;
