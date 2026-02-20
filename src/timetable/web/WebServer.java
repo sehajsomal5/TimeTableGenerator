@@ -53,16 +53,42 @@ public class WebServer {
                 return;
             }
 
-            // Read from src/timetable/web directory
-            String filePath = "src/timetable/web" + path;
-            if (Files.exists(Paths.get(filePath))) {
-                byte[] response = Files.readAllBytes(Paths.get(filePath));
+            // Read from available web directory
+            String[] possibleRoots = {
+                    "src/timetable/web",
+                    "web",
+                    "src/web",
+                    "."
+            };
+
+            String foundPath = null;
+            for (String root : possibleRoots) {
+                String fullPath = root + path;
+                if (Files.exists(Paths.get(fullPath)) && !Files.isDirectory(Paths.get(fullPath))) {
+                    foundPath = fullPath;
+                    break;
+                }
+            }
+
+            if (foundPath != null) {
+                System.out.println("Serving: " + foundPath);
+                byte[] response = Files.readAllBytes(Paths.get(foundPath));
                 t.getResponseHeaders().add("Access-Control-Allow-Origin", "*");
+
+                // Set Content-Type
+                if (path.endsWith(".html"))
+                    t.getResponseHeaders().add("Content-Type", "text/html");
+                else if (path.endsWith(".css"))
+                    t.getResponseHeaders().add("Content-Type", "text/css");
+                else if (path.endsWith(".js"))
+                    t.getResponseHeaders().add("Content-Type", "application/javascript");
+
                 t.sendResponseHeaders(200, response.length);
                 OutputStream os = t.getResponseBody();
                 os.write(response);
                 os.close();
             } else {
+                System.err.println("File Not Found: " + path + " (Checked " + Arrays.toString(possibleRoots) + ")");
                 sendResponse(t, 404, "404 Not Found: " + path);
             }
         }

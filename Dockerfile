@@ -9,7 +9,7 @@ RUN javac -d bin -sourcepath src src/timetable/*.java src/timetable/web/*.java
 FROM openjdk:11-jre-slim
 WORKDIR /app
 COPY --from=build /app/bin ./bin
-COPY src/timetable/web ./src/timetable/web
+COPY src/timetable/web ./web
 
 ENV PORT=10000
 
