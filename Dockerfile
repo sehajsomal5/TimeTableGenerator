@@ -20,10 +20,7 @@ WORKDIR /app
 
 # Copy compiled classes from build stage
 COPY --from=build /app/bin ./bin
-<<<<<<< HEAD
 COPY src/timetable/web ./web
-=======
->>>>>>> 277d80c9fd0b5ac1e9fc4f0bb8cbf5d1e2d75e16
 
 # Expose Render port (Render provides PORT automatically)
 EXPOSE 10000
